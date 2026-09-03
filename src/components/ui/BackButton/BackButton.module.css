@@ -1,0 +1,48 @@
+.backButton {
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid rgba(139, 92, 246, 0.25);
+    color: var(--text);
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 12px rgba(11, 6, 32, 0.4);
+    padding: 0;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    transition: transform 0.2s ease, filter 0.2s ease;
+    opacity: 0.85;
+}
+
+.backButton:hover {
+    background: rgba(42, 29, 94, 0.8);
+    border-color: var(--accent-hi);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
+}
+
+.backButton:hover .icon {
+    opacity: 1;
+    transform: translateX(-2px);
+}
+
+.backButton:active {
+    transform: translateY(0) scale(0.95);
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.2);
+}
+
+.backButton:focus-visible {
+    border-color: var(--accent-hi);
+    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.4);
+}

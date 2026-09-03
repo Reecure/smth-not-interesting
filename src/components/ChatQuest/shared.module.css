@@ -1,0 +1,12 @@
+.debris {
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.debrisLetter {
+    position: absolute;
+    font-size: 14px;
+    color: var(--text);
+}

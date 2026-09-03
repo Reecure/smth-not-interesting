@@ -1,0 +1,220 @@
+.layout {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 48px;
+}
+
+.phone {
+    position: relative;
+    width: 360px;
+    height: 640px;
+    border-radius: 38px;
+    background: linear-gradient(160deg, #2a2440, #14101f);
+    border: 2px solid #3a3357;
+    box-shadow:
+            0 24px 50px rgba(0, 0, 0, 0.5),
+            inset 0 0 0 2px rgba(255, 255, 255, 0.03);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 10px 8px 18px;
+}
+
+.notch {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70px;
+    height: 16px;
+    border-radius: 10px;
+    background: #0c0916;
+    z-index: 3;
+    cursor: pointer;
+}
+
+.phone::after {
+    content: '';
+    position: absolute;
+    bottom: 7px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.18);
+    z-index: 3;
+}
+
+.notchJoke {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 4;
+    background: var(--bg-deep);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 11px;
+    white-space: nowrap;
+    color: var(--text);
+    pointer-events: none;
+    animation: bubblePop 1.4s ease forwards;
+}
+
+@keyframes bubblePop {
+    0%   { opacity: 0; transform: translateX(-50%) translateY(4px); }
+    15%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+    82%  { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.phoneButtons {
+    position: absolute;
+    left: -3px;
+    top: 90px;
+    width: 3px;
+    height: 60px;
+    border-radius: 2px 0 0 2px;
+    background: #3a3357;
+}
+
+.phoneHeader {
+    padding: 22px 0 10px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    flex-shrink: 0;
+}
+
+.phoneBody {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 6px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-radius: 22px;
+    background: var(--bg-void);
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) transparent;
+}
+
+.phoneBody::-webkit-scrollbar {
+    width: 5px;
+}
+
+.phoneBody::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 3px;
+}
+
+.phoneBody::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.widgetCrop {
+    flex-shrink: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--surface);
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 240px;
+    padding-top: 8px;
+}
+
+.formTitle {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.input {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--surface);
+    background: var(--bg-deep);
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+}
+
+.input:focus {
+    border-color: var(--accent);
+}
+
+.inputShake {
+    animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25%      { transform: translateX(-6px); }
+    75%      { transform: translateX(6px); }
+}
+
+.hint {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.done {
+    font-size: 14px;
+    font-weight: 700;
+    color: #34D399;
+}
+
+.channelLink {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--accent-hi);
+    text-decoration: none;
+}
+
+.planes {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.plane {
+    position: absolute;
+    left: -40px;
+    font-size: 20px;
+    opacity: 0.5;
+    animation-name: planeFly;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    transform: rotate(35deg);
+}
+
+@keyframes planeFly {
+    0%   { transform: translate(0, 0) rotate(35deg); }
+    100% { transform: translate(120vw, -45vh) rotate(35deg); }
+}
+
+.debris {
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.debrisLetter {
+    position: absolute;
+    font-size: 14px;
+    color: var(--text);
+}

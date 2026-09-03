@@ -1,0 +1,209 @@
+.chatArea {
+    position: relative;
+    z-index: 2;
+    height: 560px;
+    width: min(680px, 92vw);
+    margin: 0 auto;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 24px 0;
+}
+
+.bubble {
+    max-width: 72%;
+    padding: 13px 18px;
+    border-radius: 16px;
+    font-size: 15px;
+    line-height: 1.5;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+    animation: bubbleIn 0.28s cubic-bezier(.2, .8, .3, 1.1);
+}
+
+.bubbleBot {
+    align-self: flex-start;
+    background: linear-gradient(160deg, var(--surface), var(--bg-deep));
+    color: var(--text);
+    border: 1px solid rgba(167, 139, 250, 0.2);
+    border-bottom-left-radius: 4px;
+}
+
+.bubbleUser {
+    align-self: flex-end;
+    background: linear-gradient(160deg, var(--accent-hi), var(--accent));
+    color: #fff;
+    border-bottom-right-radius: 4px;
+}
+
+@keyframes bubbleIn {
+    from { opacity: 0; transform: translateY(10px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.typing {
+    align-self: flex-start;
+    background: var(--surface);
+    border-radius: 16px;
+    border-bottom-left-radius: 4px;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.typingDot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent-hi);
+    animation: typingPulse 1s ease-in-out infinite;
+}
+
+.typingDot:nth-child(2) { animation-delay: 0.15s; }
+.typingDot:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes typingPulse {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50%      { opacity: 1; transform: scale(1.15); }
+}
+
+.troll {
+    align-self: flex-start;
+    background: linear-gradient(160deg, var(--surface), var(--bg-deep));
+    border: 1px solid var(--accent);
+    border-radius: 16px;
+    border-bottom-left-radius: 4px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+}
+
+.trollHeader {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.trollTimer {
+    margin-left: 6px;
+    font-size: 12px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.trollBtn {
+    padding: 6px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--accent);
+    background: transparent;
+    color: var(--accent-hi);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.trollBtn:hover {
+    background: var(--accent);
+    color: #fff;
+}
+
+.trollNote {
+    position: absolute;
+    top: -30px;
+    left: 16px;
+    background: var(--bg-deep);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 12px;
+    white-space: nowrap;
+    animation: bubblePop 1.2s ease forwards;
+}
+
+@keyframes bubblePop {
+    0%   { opacity: 0; transform: translateY(4px); }
+    15%  { opacity: 1; transform: translateY(0); }
+    82%  { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.replyRow {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.replyInput {
+    padding: 11px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--surface);
+    background: var(--bg-deep);
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    width: 260px;
+}
+
+.replyInput:focus {
+    border-color: var(--accent);
+}
+
+.finalWrap {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    margin-top: 14px;
+}
+
+.finalGif {
+    max-width: 240px;
+    border-radius: 12px;
+    border: 1px solid var(--surface);
+}
+
+.floatingLetters {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.floatingLetterTrack {
+    position: absolute;
+    bottom: -40px;
+    animation-name: letterDrift;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+@keyframes letterDrift {
+    0%   { transform: translateY(0) rotate(0deg); opacity: 0; }
+    10%  { opacity: 0.22; }
+    90%  { opacity: 0.22; }
+    100% { transform: translateY(-110vh) rotate(25deg); opacity: 0; }
+}
+
+.floatingLetter {
+    display: inline-block;
+    color: var(--accent-hi);
+    font-weight: 700;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.floatingLetterPop {
+    animation: letterPop 0.5s ease;
+}
+
+@keyframes letterPop {
+    0%   { transform: scale(1) rotate(0deg); color: var(--accent-hi); }
+    50%  { transform: scale(2.3) rotate(180deg); color: var(--lamp); }
+    100% { transform: scale(1) rotate(360deg); color: var(--accent-hi); }
+}
