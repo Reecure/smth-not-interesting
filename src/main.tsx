@@ -11,7 +11,7 @@ import StoryQuest from "./components/StoryQuest/StoryQuest.tsx";
 import ChatQuest from "./components/ChatQuest/ChatQuest.tsx";
 
 createRoot(document.getElementById('root')!).render(
-    <BrowserRouter>
+    <BrowserRouter basename={'smth-not-interesting'}>
         <Routes>
             <Route path="/" element={<Hub />} />
             <Route path="/quest/shake" element={<Desktop />} />
