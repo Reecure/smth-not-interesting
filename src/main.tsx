@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { HashRouter, Routes, Route } from 'react-router-dom'
 import Hub from './components/Hub.tsx'
 import Desktop from './components/ShakeGame/Desktop.tsx'
 import Mobile from './components/ShakeGame/Mobile.tsx'
@@ -11,7 +11,7 @@ import StoryQuest from "./components/StoryQuest/StoryQuest.tsx";
 import ChatQuest from "./components/ChatQuest/ChatQuest.tsx";
 
 createRoot(document.getElementById('root')!).render(
-    <BrowserRouter basename={'smth-not-interesting'}>
+    <HashRouter>
         <Routes>
             <Route path="/" element={<Hub />} />
             <Route path="/quest/shake" element={<Desktop />} />
@@ -22,5 +22,5 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/quest/story" element={<StoryQuest />} />
             <Route path="/m/:code" element={<Mobile />} />
         </Routes>
-    </BrowserRouter>
+    </HashRouter>
 )

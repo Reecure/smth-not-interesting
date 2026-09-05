@@ -1,114 +1,84 @@
 import { useEffect, useRef, useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
-import {usePeerStatus} from "./usePeerStatus.ts";
-import LandingField, {type LandingFieldHandle} from "./LandingField.tsx";
-import {openRevealWindow, removeCrate, startGameInWindow} from "./revealWindow.ts";
-import Background from "../../animations/Background.tsx";
-import StartScreen from "../StartScreen.tsx";
-import RainBackground from "../RainBackground.tsx";
-import Pond from "./Pond.tsx";
-import { makeDuckSeed, type DuckSeed } from "./duckSeed.ts";
+import LandingField, { type LandingFieldHandle } from './LandingField.tsx'
+import { useShakeProgress } from './useShakeProgress.ts'
+import Background from '../../animations/Background.tsx'
+import StartScreen from '../StartScreen.tsx'
+import RainBackground from '../RainBackground.tsx'
+import Pond from './Pond.tsx'
+import { makeDuckSeed, type DuckSeed } from './duckSeed.ts'
+import { useQuestProgress } from '../../api/useQuestProgress.ts'
+import { resetProgress } from '../../api/questApi.ts'
+import BackButton from '../ui/BackButton/BackButton.tsx'
 
-import { isQuestComplete, submitAnswer } from '../../api/questApi.ts'
-
-const CRATE_COUNT = 5
-const POPUP_POLL_MS = 1000
-const QUEST_ID = 'shake'
+const API_URL = 'https://smth-not-interesting-back.onrender.com'
+const DUCK_COUNT = 5
 
 type Stage = 'idle' | 'shaking' | 'done'
 
 export default function Desktop() {
-    const [stage, setStage] = useState<Stage>(() => {
-        return isQuestComplete(QUEST_ID) ? 'done' : 'idle'
-    })
+    const { state, saving, saveError, submit, isDone } = useQuestProgress('shake')
+
+    const [stage, setStage] = useState<Stage>('idle')
     const [code, setCode] = useState('')
-    const [popupOpen, setPopupOpen] = useState(false)
-    const [ducks, setDucks] = useState<DuckSeed[]>(() => {
-        if (!isQuestComplete(QUEST_ID)) return []
-        return Array.from({ length: CRATE_COUNT }, (_, i) => makeDuckSeed(i))
+    const [ducks, setDucks] = useState<DuckSeed[]>([])
+    const [dragActive, setDragActive] = useState(false)
+
+    const fieldRef = useRef<LandingFieldHandle>(null)
+    const pondRef = useRef<HTMLDivElement>(null)
+    const restoredRef = useRef(false)
+
+    const { connected, peer, progress, amp, peak, spawned } = useShakeProgress({
+        code,
+        total: DUCK_COUNT,
+        active: stage === 'shaking',
+        onSpawn: index => fieldRef.current?.spawnDuck(index),
     })
 
-    const revealWindowRef = useRef<Window | null>(null)
-    const landingFieldRef = useRef<LandingFieldHandle>(null)
-    const gameStartedRef = useRef(false)
-
-    const { connected, peer } = usePeerStatus(stage === 'shaking' ? code : '')
+    useEffect(() => {
+        if (restoredRef.current || !isDone) return
+        restoredRef.current = true
+        setDucks(Array.from({ length: DUCK_COUNT }, (_, i) => makeDuckSeed(i)))
+        setStage('done')
+    }, [isDone])
 
     useEffect(() => {
-        if (stage !== 'shaking') return
-        fetch('/api/room')
+        if (stage !== 'shaking' || code) return
+        fetch(`${API_URL}/api/room`)
             .then(r => r.json())
             .then(d => setCode(d.code))
-    }, [stage])
+            .catch(console.error)
+    }, [stage, code])
 
-    useEffect(() => {
-        if (!peer || !code) return
-        if (gameStartedRef.current) return
-        const w = revealWindowRef.current
-        if (!w || w.closed) return
-        startGameInWindow(w, CRATE_COUNT, code)
-        gameStartedRef.current = true
-    }, [peer, code])
+    const start = () => setStage('shaking')
 
-    useEffect(() => {
-        if (stage !== 'shaking') return
-        const interval = setInterval(() => {
-            const w = revealWindowRef.current
-            if (w && w.closed) {
-                restartRoom()
-            }
-        }, POPUP_POLL_MS)
-        return () => clearInterval(interval)
-    }, [stage])
-
-    const openPopup = () => {
-        const w = openRevealWindow()
-        if (!w) {
-            setPopupOpen(false)
-            return null
-        }
-        revealWindowRef.current = w
-        setPopupOpen(true)
-        return w
-    }
-
-    const restartRoom = () => {
+    const handleReset = async () => {
+        await resetProgress('shake')
+        restoredRef.current = false
         setDucks([])
-        landingFieldRef.current?.clearAll()
-        gameStartedRef.current = false
-        revealWindowRef.current?.close()
-        revealWindowRef.current = null
         setCode('')
-        fetch('/api/room')
-            .then(r => r.json())
-            .then(d => setCode(d.code))
-        openPopup()
+        fieldRef.current?.clearAll()
+        setStage('idle')
     }
 
-    const start = () => {
-        setStage('shaking')
-        openPopup()
-    }
-
-    const handleCrateArrived = (crateId: string) => {
-        removeCrate(revealWindowRef.current, crateId)
-    }
-
-    const handleDropCrate = (crateId: string) => {
-        landingFieldRef.current?.removeCrate(crateId)
+    const handleDuckToPond = () => {
         setDucks(prev => {
             const next = [...prev, makeDuckSeed(prev.length)]
-            if (next.length >= CRATE_COUNT) {
-                submitAnswer(QUEST_ID, { ducksPlaced: CRATE_COUNT })
-                revealWindowRef.current?.close()
-                revealWindowRef.current = null
+            if (next.length >= DUCK_COUNT) {
+                submit({ ducksPlaced: DUCK_COUNT, peak })
+                fieldRef.current?.clearAll()
                 setStage('done')
             }
             return next
         })
     }
 
-    const mobileUrl = code ? `${window.location.origin}/m/${code}` : ''
+    const mobileUrl = code
+        ? `${window.location.origin}${window.location.pathname}#/m/${code}`
+        : ''
+
+    const allSpawned = spawned >= DUCK_COUNT
+    const showQr = stage === 'shaking' && spawned === 0
 
     if (stage === 'idle') {
         return (
@@ -123,28 +93,105 @@ export default function Desktop() {
         <div className="wrapper">
             <Background className="bg-lottie" />
             <RainBackground />
-            <a className="quest-shell__back" href="/">← Квесты</a>
+
+            <a className="quest-shell__back" href="/smth-not-interesting/">
+                <BackButton onClick={() => {}} />
+            </a>
+
+            <div className="quest-shell__state">
+                {state === 'loading' && <span className="badge badge--muted">загрузка...</span>}
+                {state === 'offline' && <span className="badge badge--warn">офлайн</span>}
+                {saving && <span className="badge badge--muted">сохраняю...</span>}
+                {saveError && <span className="badge badge--warn">не сохранилось</span>}
+                {stage === 'done' && !saving && <span className="badge badge--ok">пройдено</span>}
+            </div>
+
+            {stage === 'done' && (
+                <button className="reset-btn" onClick={handleReset}>
+                    пройти заново
+                </button>
+            )}
+
+            {stage === 'shaking' && (
+                <LandingField
+                    ref={fieldRef}
+                    pondRef={pondRef}
+                    onDuckToPond={handleDuckToPond}
+                    onDragChange={setDragActive}
+                />
+            )}
 
             <div className="stage">
-                {stage === 'shaking' && !popupOpen && (
-                    <button className="reopen-btn" onClick={openPopup}>окно недоступно — открыть заново</button>
-                )}
+                <div
+                    className="shake-head"
+                    style={{
+                        ['--a' as string]: amp.toFixed(2),
+                        animation: amp > 0.5 ? 'quake 70ms infinite' : 'none',
+                        filter: amp > 4 ? `blur(${(amp - 4) * 0.1}px)` : 'none',
+                    }}
+                >
+                    <h1 className="title">
+                        {stage === 'done'
+                            ? 'утиный пруд'
+                            : allSpawned
+                                ? 'тащи уточек в лужицу'
+                                : 'тряси телефон'}
+                    </h1>
 
-                {stage === 'shaking' && <LandingField ref={landingFieldRef} onCrateArrived={handleCrateArrived} />}
+                    {stage === 'shaking' && (
+                        <>
+                            <div className="bar">
+                                <div className="bar__fill" style={{ width: `${progress}%` }} />
+                            </div>
+                            <div className="stats">
+                                <span>{Math.round(progress)}%</span>
+                                <span>
+                                    выпало: {spawned}/{DUCK_COUNT}
+                                </span>
+                                <span>пик: {peak}</span>
+                            </div>
+                        </>
+                    )}
 
-                <h1 className="title">{stage === 'done' ? 'утиный пруд' : 'собери уточек в лужице'}</h1>
-                {stage === 'done' && (
-                    <p className="subtitle">нажмите на уточку, чтобы спрятать её — нажмите ещё раз, чтобы вернуть</p>
-                )}
+                    {stage === 'done' && (
+                        <p className="subtitle">
+                            нажмите на уточку, чтобы спрятать её — нажмите ещё раз, чтобы вернуть
+                        </p>
+                    )}
+                </div>
 
-                <Pond ducks={ducks} total={CRATE_COUNT} complete={stage === 'done'} onDropCrate={handleDropCrate} />
+                <Pond
+                    ref={pondRef}
+                    ducks={ducks}
+                    total={DUCK_COUNT}
+                    complete={stage === 'done'}
+                    dragActive={dragActive}
+                />
 
-                {stage === 'shaking' && !peer && code && (
+                {showQr && (
                     <div className="qr">
-                        <QRCodeSVG value={mobileUrl} size={180} bgColor="#150E33" fgColor="#A78BFA" />
-                        <p className="hint">{code}</p>
-                        <p className="url">{mobileUrl}</p>
-                        <p className="status">{connected ? 'жду телефон' : 'подключаюсь...'}</p>
+                        {code ? (
+                            <>
+                                <QRCodeSVG
+                                    value={mobileUrl}
+                                    size={180}
+                                    level="L"
+                                    bgColor="#150E33"
+                                    fgColor="#A78BFA"
+                                />
+                                <p className="hint">{code}</p>
+                                <p className="url">{mobileUrl}</p>
+                                <p className="status">
+                                    {peer
+                                        ? 'телефон на связи'
+                                        : connected
+                                            ? 'жду телефон'
+                                            : 'подключаюсь...'}
+                                </p>
+                            </>
+                        ) : (
+                            <p className="status">получаю комнату...</p>
+                        )}
                     </div>
                 )}
             </div>

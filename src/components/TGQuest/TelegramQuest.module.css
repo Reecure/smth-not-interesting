@@ -2,7 +2,6 @@
     position: relative;
     z-index: 2;
     display: flex;
-    flex-wrap: wrap;
     align-items: flex-start;
     justify-content: center;
     gap: 48px;
@@ -10,7 +9,7 @@
 
 .phone {
     position: relative;
-    width: 360px;
+    width: 420px;
     height: 640px;
     border-radius: 38px;
     background: linear-gradient(160deg, #2a2440, #14101f);
@@ -135,8 +134,10 @@
 }
 
 .formTitle {
-    font-size: 15px;
+    font-size: 32px;
     font-weight: 700;
+    white-space: nowrap;
+    margin-bottom: 24px;
     color: var(--text);
 }
 
@@ -165,6 +166,7 @@
 }
 
 .hint {
+    text-align: start;
     font-size: 12px;
     color: var(--muted);
 }
@@ -181,24 +183,43 @@
     color: var(--accent-hi);
     text-decoration: none;
 }
-
 .planes {
     position: fixed;
     inset: 0;
-    z-index: 1;
+    z-index: 6;
     overflow: hidden;
     pointer-events: none;
 }
 
 .plane {
     position: absolute;
-    left: -40px;
-    font-size: 20px;
-    opacity: 0.5;
+    left: -60px;
+    opacity: 0.55;
+    pointer-events: auto;
+    cursor: pointer;
     animation-name: planeFly;
     animation-timing-function: linear;
     animation-iteration-count: infinite;
     transform: rotate(35deg);
+    transition: opacity 180ms ease, filter 180ms ease;
+    will-change: transform;
+}
+
+.plane:hover {
+    opacity: 1;
+    filter: drop-shadow(0 0 10px var(--accent-hi));
+}
+
+.plane:active {
+    filter: drop-shadow(0 0 16px var(--accent-hi)) brightness(1.3);
+}
+
+.planeImg {
+    display: block;
+    width: 40px;
+    height: 40px;
+    user-select: none;
+    -webkit-user-drag: none;
 }
 
 @keyframes planeFly {
@@ -206,15 +227,186 @@
     100% { transform: translate(120vw, -45vh) rotate(35deg); }
 }
 
-.debris {
+.planeStrike {
     position: fixed;
-    inset: 0;
-    z-index: 5;
+    left: 0;
+    top: 0;
+    opacity: 1;
+    pointer-events: none;
+    animation-name: planeStrike;
+    animation-duration: var(--fly, 700ms);
+    animation-timing-function: cubic-bezier(.35, 0, .8, .55);
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+    filter: drop-shadow(0 0 12px var(--accent-hi));
+    z-index: 8;
+}
+
+@keyframes planeStrike {
+    0% {
+        transform: translate(0, 0) rotate(var(--ang)) scale(1);
+        opacity: 1;
+    }
+    18% {
+        transform: translate(calc(var(--dx) * 0.06), calc(var(--dy) * 0.06 - 26px))
+        rotate(calc(var(--ang) + 24deg)) scale(1.14);
+        opacity: 1;
+    }
+    72% {
+        transform: translate(calc(var(--dx) * 0.82), calc(var(--dy) * 0.82))
+        rotate(var(--ang)) scale(0.95);
+        opacity: 1;
+    }
+    92% {
+        transform: translate(var(--dx), var(--dy)) rotate(var(--ang)) scale(0.5);
+        opacity: 0.7;
+    }
+    100% {
+        transform: translate(var(--dx), var(--dy)) rotate(var(--ang)) scale(0.25);
+        opacity: 0;
+    }
+}
+
+/* ---- башня ---- */
+
+.tower {
+    position: fixed;
+    right: 6%;
+    bottom: 8%;
+    width: 320px;
+    height: 320px;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    z-index: 7;
+}
+
+.tower2 {
+    position: fixed;
+    right: 19%;
+    bottom: 8%;
+    width: 320px;
+    height: 320px;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    z-index: 7;
+}
+
+.towerImg {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    opacity: 0.75;
+    filter: drop-shadow(0 0 14px rgba(139, 92, 246, 0.35));
+    transition: opacity 220ms ease, filter 220ms ease;
+}
+
+.towerHit .towerImg {
+    opacity: 1;
+    filter: drop-shadow(0 0 26px var(--accent-hi)) brightness(1.35);
+    animation: towerQuake 420ms cubic-bezier(.36, .07, .19, .97);
+}
+
+@keyframes towerQuake {
+    0%, 100% { transform: translate(0, 0) rotate(0); }
+    15%  { transform: translate(-5px, 2px) rotate(-2.5deg) scale(1.06); }
+    35%  { transform: translate(4px, -3px) rotate(2deg) scale(1.04); }
+    55%  { transform: translate(-3px, 1px) rotate(-1.2deg); }
+    75%  { transform: translate(2px, 1px) rotate(0.6deg); }
+}
+
+.towerRipple {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 60px;
+    height: 60px;
+    margin: -30px 0 0 -30px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-hi);
+    animation: towerRipple 900ms cubic-bezier(.2, .8, .3, 1) forwards;
     pointer-events: none;
 }
 
-.debrisLetter {
+@keyframes towerRipple {
+    0%   { transform: scale(0.3); opacity: 0.9; border-width: 3px; }
+    70%  { opacity: 0.35; }
+    100% { transform: scale(3.2); opacity: 0; border-width: 1px; }
+}
+
+.towerSpark {
     position: absolute;
-    font-size: 14px;
+    top: 50%;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    margin: -7px 0 0 -7px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff, var(--accent-hi) 45%, transparent 70%);
+    animation: towerSpark 420ms ease-out forwards;
+    pointer-events: none;
+}
+
+.cat {
+    position: fixed;
+    top: 4%;
+    right: 0;
+    z-index: 9;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    transform: translateX(115%);
+    transition: transform 520ms cubic-bezier(.34, 1.45, .5, 1);
+    pointer-events: none;
+}
+
+.catIn {
+    transform: translateX(0);
+    animation: catWiggle 2.4s ease-in-out 520ms infinite;
+}
+
+@keyframes catWiggle {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    25%      { transform: translateX(-4px) rotate(-1.5deg); }
+    60%      { transform: translateX(2px) rotate(1deg); }
+}
+
+.catImg {
+    width: 150px;
+    height: auto;
+    display: block;
+    filter: drop-shadow(-6px 8px 16px rgba(0, 0, 0, 0.5));
+    border-radius: 14px 0 0 14px;
+}
+
+.catBubble {
+    align-self: center;
+    margin-top: 18px;
+    background: var(--bg-deep);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 6px 12px;
+    font-size: 12px;
     color: var(--text);
+    white-space: nowrap;
+    opacity: 0;
+    animation: catBubbleIn 400ms ease 620ms forwards;
+}
+
+@keyframes catBubbleIn {
+    0%   { opacity: 0; transform: translateX(10px) scale(0.9); }
+    100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes towerSpark {
+    0%   { transform: scale(0.4); opacity: 1; }
+    100% { transform: scale(3.4); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .plane { animation: none; opacity: 0.35; }
+    .towerHit .towerImg { animation: none; }
+    .catIn { animation: none; }
+    .cat { transition-duration: 200ms; }
 }

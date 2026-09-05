@@ -6,7 +6,7 @@ import FloatingLetters from './FloatingLetters.tsx'
 import TypingIndicator from './TypingIndicator.tsx'
 import TrollTyping from './TrollTyping.tsx'
 import { chatScript, FINAL_GIF_SRC } from './chatScript.ts'
-import { submitAnswer } from '../../api/questApi.ts'
+import { useQuestProgress } from '../../api/useQuestProgress.ts'
 import styles from './ChatQuest.module.css'
 
 type ChatMessage = {
@@ -20,9 +20,10 @@ const TYPING_PER_CHAR_MS = 85
 const PAUSE_AFTER_MS = 650
 const TROLL_BASE_MS = 16000
 const TROLL_SPEEDUP_MS = 5000
-const QUEST_ID = 'chat'
 
 export default function ChatQuest() {
+    const { state, saving, saveError, submit, isDone } = useQuestProgress('chat')
+
     const [messages, setMessages] = useState<ChatMessage[]>([])
     const [typing, setTyping] = useState(false)
     const [awaitingReply, setAwaitingReply] = useState(false)
@@ -40,7 +41,10 @@ export default function ChatQuest() {
     const startedRef = useRef(false)
     const trollRemainingRef = useRef(0)
     const trollIntervalRef = useRef<number | null>(null)
+    const submitRef = useRef(submit)
     const { letters, spawn } = useLetterDebris()
+
+    submitRef.current = submit
 
     const commit = (next: ChatMessage[]) => {
         messagesRef.current = next
@@ -78,9 +82,7 @@ export default function ChatQuest() {
         trollIntervalRef.current = window.setInterval(() => {
             trollRemainingRef.current = Math.max(0, trollRemainingRef.current - 100)
             setTrollRemaining(trollRemainingRef.current)
-            if (trollRemainingRef.current <= 0) {
-                finishTrollTyping(text)
-            }
+            if (trollRemainingRef.current <= 0) finishTrollTyping(text)
         }, 100)
     }
 
@@ -139,7 +141,7 @@ export default function ChatQuest() {
         if (step.kind === 'final') {
             pushBot(step.text)
             setDone(true)
-            submitAnswer(QUEST_ID, { replies: repliesRef.current })
+            submitRef.current({ replies: repliesRef.current, watched: true })
         }
     }
 
@@ -162,19 +164,33 @@ export default function ChatQuest() {
     }
 
     return (
-        <QuestShell status={done ? 'done' : 'todo'}>
+        <QuestShell
+            status={done || isDone ? 'done' : 'todo'}
+            state={state}
+            saving={saving}
+            saveError={saveError}
+        >
             <FloatingLetters />
             <LetterDebris letters={letters} />
 
             <div className={styles.chatArea} ref={areaRef}>
                 {messages.map(m => (
-                    <div key={m.id} className={`${styles.bubble} ${m.sender === 'user' ? styles.bubbleUser : styles.bubbleBot}`}>
+                    <div
+                        key={m.id}
+                        className={`${styles.bubble} ${
+                            m.sender === 'user' ? styles.bubbleUser : styles.bubbleBot
+                        }`}
+                    >
                         {m.text}
                     </div>
                 ))}
                 {typing && !trollActive && <TypingIndicator />}
                 {trollActive && (
-                    <TrollTyping remainingMs={trollRemaining} note={trollNote} onSpeedUp={handleSpeedUp} />
+                    <TrollTyping
+                        remainingMs={trollRemaining}
+                        note={trollNote}
+                        onSpeedUp={handleSpeedUp}
+                    />
                 )}
             </div>
 
@@ -188,7 +204,9 @@ export default function ChatQuest() {
                         onKeyDown={e => e.key === 'Enter' && handleReplySubmit()}
                         autoFocus
                     />
-                    <button className="mobile__btn" onClick={handleReplySubmit}>отправить</button>
+                    <button className={styles.replyBtn} onClick={handleReplySubmit}>
+                        отправить
+                    </button>
                 </div>
             )}
 
